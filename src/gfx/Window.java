@@ -36,7 +36,7 @@ public class Window {
 	public static final String[] staticNames = new String[] {"pit.bin", "pit.bin", null, null};
 	public static final String[] staticLocations = new String[] {"private/ds/app/484E494A/", "", ""}; //only one pit because the section that parses this will only know of one
 	public static final Object[][] githubFiles = new Object[][] {{"https://api.github.com/repos/DS-Homebrew/TWiLightMenu/releases/latest", 0}};
-	public static final String[] githubNames = new String[] {"twilight.7z"};
+	public static final String[] githubNames = new String[] {"twilightmenu.7z"};
 	
 	public static final String[] twilightMenuDirectories = new String[] {"DSi&3DS - SD card users/_nds", "DSi - CFW users/SDNAND root/hiya", "DSi - CFW users/SDNAND root/title", "_nds", "roms"};
 	public static final String[] twilightMenuFiles = new String[] {"DSi&3DS - SD card users/BOOT.NDS"};
@@ -98,7 +98,7 @@ public class Window {
 		
 		if (twilightMenu != null) {
 			try {
-				File targetDir = new File("twilight");
+				File targetDir = new File("twilightmenu");
 				frame.setTitle("Extracting...");
 				downloadBar.setValue(0);
 				downloadBar.setMaximum(1);
@@ -148,12 +148,12 @@ public class Window {
 					else {
 						downloadBar.setString("Copying " + path);
 					}
-					FileUtils.copyDirectory(new File("twilight/" + path), new File(sd.getAbsolutePath() + "/" + new File(path).getName()));
+					FileUtils.copyDirectory(new File("twilightmenu/" + path), new File(sd.getAbsolutePath() + "/" + new File(path).getName()));
 					downloadBar.setValue(downloadBar.getValue() + 1);
 				}
 				for (String file : twilightMenuFiles) {
 					downloadBar.setString("Copying " + file);
-					FileUtils.copyFile(new File("twilight/" + file), new File(sd.getAbsolutePath() + "/" + new File(file).getName()));
+					FileUtils.copyFile(new File("twilightmenu/" + file), new File(sd.getAbsolutePath() + "/" + new File(file).getName()));
 					downloadBar.setValue(downloadBar.getValue() + 1);
 				}
 			} catch (Exception e) {
