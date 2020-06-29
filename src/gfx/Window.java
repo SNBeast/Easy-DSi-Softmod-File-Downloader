@@ -31,16 +31,17 @@ public class Window {
 	private JFileChooser chooser = new JFileChooser("Select your SD card's root");
 	private JProgressBar downloadBar = new JProgressBar(0, 0);
 	private JFrame frame = new JFrame("Downloading...");
+	
 	public static final String[] staticFiles = new String[] {"pitOther.bin", "pit4.bin", "dumpTool.nds", "UNLAUNCH.DSI"};
 	public static final String[] staticNames = new String[] {"pit.bin", "pit.bin", null, null};
-	public static final String[] staticLocations = new String[] {"private/ds/app/484E494A/", "", ""}; //only one because the section that parses this will only know of one
+	public static final String[] staticLocations = new String[] {"private/ds/app/484E494A/", "", ""}; //only one pit because the section that parses this will only know of one
 	public static final Object[][] githubFiles = new Object[][] {{"https://api.github.com/repos/DS-Homebrew/TWiLightMenu/releases/latest", 0}};
 	public static final String[] githubNames = new String[] {"twilight.7z"};
 	
 	public static final String[] twilightMenuDirectories = new String[] {"DSi&3DS - SD card users/_nds", "DSi - CFW users/SDNAND root/hiya", "DSi - CFW users/SDNAND root/title", "_nds", "roms"};
 	public static final String[] twilightMenuFiles = new String[] {"DSi&3DS - SD card users/BOOT.NDS"};
 	
-	public Window () { //i hope you like monolithic programs
+	public Window () { //i hope you like messy monolithic programs
 		downloadBar.setPreferredSize(new Dimension(400, 50));
 		downloadBar.setStringPainted(true);
 		frame.add(downloadBar);
@@ -50,29 +51,32 @@ public class Window {
 		
 		JOptionPane.showMessageDialog(null,
 				"Easy DSi Softmod File Downloader, Copyright (C) 2020 SNBeast\n"
-				+ "License is in LICENSE.txt, included with this program.\n"
+				+ "This program's license is in LICENSE.txt, bundled with this program.\n\n"
 				+ "None of the files downloaded here are authored by me.");
 		
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		File sd = getFolder();
 		
-		int ignore = JOptionPane.showOptionDialog(null,
-				"Is your DSi both:\n"
-				+ " - Firmware 1.4+\n"
-				+ " - Neither Korean nor Chinese region",
-		"Select DSi type", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-		if (ignore == -1) System.exit(0); //-1 being an error (probably clicking the close button)
+		int region = JOptionPane.showOptionDialog(null, "Is your DSi Korean/Chinese region?", "Select DSi region", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		int ignore = 1;
+		if (region == 1) {
+			ignore = JOptionPane.showOptionDialog(null, "Does your DSi have a firmware version of at least 1.4?", "Select DSi firmware", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		}
+		else if (region == -1) System.exit(0); //-1 being an error (probably clicking the close button)
+		
+		int unlaunch = JOptionPane.showOptionDialog(null, "Do you want to also download Unlaunch?", "Also include Unlaunch?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		if (unlaunch == -1) System.exit(0);
 		
 		int twilight = JOptionPane.showOptionDialog(null, "Do you want to also download and extract TWiLightMenu?", "Also include TWiLightMenu?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
 		if (twilight == -1) System.exit(0);
 		
-		downloadBar.setMaximum(staticFiles.length + githubFiles.length - (twilight == 0 ? 1 : 2)); //minus one copy of pit.bin, and optionally minus twilightmenu
+		downloadBar.setMaximum(staticFiles.length + githubFiles.length - twilight - unlaunch - 1); //minus one copy of pit.bin, and optionally minus twilightmenu and unlaunch
 		frame.setVisible(true);
 		
 		ArrayList<File> files = new ArrayList<File>();
 		String name;
 		for (int i = 0; i < staticFiles.length; i++) {
-			if (i != ignore) { //conveniently arranged such that the ignore option chosen previously determines which pit.bin not to get
+			if (i != ignore && (i != staticFiles.length - 1 || unlaunch == 0)) {
 				name = staticNames[i] == null ? staticFiles[i] : staticNames[i];
 				downloadBar.setString("Downloading " + name);
 				files.add(FileRetriever.getNetFile("https://github.com/SNBeast/Easy-DSi-Softmod-File-Downloader/raw/master/rsc/" + staticFiles[i], name));
@@ -95,6 +99,7 @@ public class Window {
 		if (twilightMenu != null) {
 			try {
 				File targetDir = new File("twilight");
+				frame.setTitle("Extracting...");
 				downloadBar.setValue(0);
 				downloadBar.setMaximum(1);
 				downloadBar.setString("Extracting TWiLight Menu++");
@@ -130,12 +135,19 @@ public class Window {
 				JOptionPane.showMessageDialog(null, "An error occurred during the extraction of TWiLight Menu. Report this issue immediately.", "Error", JOptionPane.ERROR_MESSAGE);
 				System.exit(4);
 			}
+
+			frame.setTitle("Copying...");
 			
 			downloadBar.setValue(0);
 			downloadBar.setMaximum(twilightMenuDirectories.length + twilightMenuFiles.length);
 			try {
 				for (String path : twilightMenuDirectories) {
-					downloadBar.setString("Copying " + path);
+					if (path.equals("_nds")) {
+						downloadBar.setString("Copying " + path + " (this may take a while)");
+					}
+					else {
+						downloadBar.setString("Copying " + path);
+					}
 					FileUtils.copyDirectory(new File("twilight/" + path), new File(sd.getAbsolutePath() + "/" + new File(path).getName()));
 					downloadBar.setValue(downloadBar.getValue() + 1);
 				}
@@ -149,8 +161,9 @@ public class Window {
 				System.exit(5);
 			}
 		}
-		
+		frame.setTitle("Copying...");
 		downloadBar.setValue(0);
+		downloadBar.setMaximum(files.size());
 		try {
 			for (int i = 0; i < files.size(); i++) {
 				File f = files.get(i);
@@ -167,6 +180,8 @@ public class Window {
 			JOptionPane.showMessageDialog(null, "An error occurred during file copy. Check that the SD is still mounted. Otherwise, report this issue immediately.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(3);
 		}
+		frame.setVisible(false);
+		JOptionPane.showMessageDialog(null, "Completed successfully!");
 		System.exit(0);
 	}
 	private File getFolder () {
