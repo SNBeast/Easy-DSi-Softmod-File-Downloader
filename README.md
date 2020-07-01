@@ -19,4 +19,4 @@ The authors of all downloaded tools:
 The authors of all used libraries:
 - [Apache](https://www.apache.org/) - Apache Commons (Compress and IO)
 - [fangyidong](https://github.com/fangyidong/json-simple) - json-simple
-- [tukaani](https://tukaani.org/) - XZ for Java
+- [The Tukaani Project](https://tukaani.org/) - XZ for Java
