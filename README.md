@@ -1,5 +1,7 @@
 # Easy-DSi-Softmod-File-Downloader
 
+This program has been deprecated until further notice by [YourKalamity's similar Python script](https://github.com/YourKalamity/lazy-dsi-file-downloader).
+
 This program downloads and places on your SD the necessary files to softmod your DSi.
 
 macOS support seems to be iffy so far; the only tester to report success was using Catalina.
